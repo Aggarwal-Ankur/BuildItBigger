@@ -1,6 +1,5 @@
 package com.udacity.gradle.builditbigger.communication;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Pair;
 import android.widget.Toast;
@@ -8,24 +7,22 @@ import android.widget.Toast;
 import com.aggarwalankur.gce.jokeprovider.myApi.MyApi;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
-import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 
 import java.io.IOException;
 
 /**
  * Created by Ankur on 8/17/2016.
  */
-public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, String> {
+public class EndpointsAsyncTask extends AsyncTask<EndpointsAsyncTask.OnJokeFetchedListener, Void, String> {
     public interface OnJokeFetchedListener{
         void OnJokeFetched(String loadedJoke);
     }
 
     private static MyApi myApiService = null;
-    private Context context;
+    private OnJokeFetchedListener mListener;
 
     @Override
-    protected String doInBackground(Pair<Context, String>... params) {
+    protected String doInBackground(EndpointsAsyncTask.OnJokeFetchedListener... params) {
         if(myApiService == null) {  // Only do this once
             MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(), new AndroidJsonFactory(), null)
                     .setRootUrl("https://jokeprovider-nanodegree.appspot.com/_ah/api/");
@@ -36,8 +33,7 @@ public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, S
             myApiService = builder.build();
         }
 
-        context = params[0].first;
-        String name = params[0].second;
+        mListener = params[0];
 
         try {
             return myApiService.getJoke().execute().getData();
@@ -48,6 +44,6 @@ public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, S
 
     @Override
     protected void onPostExecute(String result) {
-        Toast.makeText(context, result, Toast.LENGTH_LONG).show();
+        mListener.OnJokeFetched(result);
     }
 }

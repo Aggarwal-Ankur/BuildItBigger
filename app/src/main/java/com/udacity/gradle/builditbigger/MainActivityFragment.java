@@ -1,5 +1,6 @@
 package com.udacity.gradle.builditbigger;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
@@ -27,9 +28,11 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
 
     private InterstitialAd mInterstitialAd;
 
-    private String mFetchedJoke = "Test joke";
+    private String mFetchedJoke;
 
     private Button mTellJokeButton;
+
+    private ProgressDialog mDialog;
 
     public MainActivityFragment() {
     }
@@ -38,6 +41,12 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_main, container, false);
+
+        //Build the dialog
+        mDialog = new ProgressDialog(getActivity());
+        mDialog.setIndeterminate(true);
+        mDialog.setMessage(getResources().getString(R.string.fetching_joke));
+
 
         AdView mAdView = (AdView) root.findViewById(R.id.adView);
         // Create an ad request. Check logcat output for the hashed device ID to
@@ -65,11 +74,8 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
         mTellJokeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mInterstitialAd.isLoaded()) {
-                    mInterstitialAd.show();
-                } else {
-                    launchJokeActivity();
-                }
+                mDialog.show();
+                loadJokeFromGCE();
             }
         });
 
@@ -99,15 +105,22 @@ public class MainActivityFragment extends Fragment implements EndpointsAsyncTask
     }
 
     private void loadJokeFromGCE(){
-        new EndpointsAsyncTask().execute(new Pair<Context, String>(getActivity(), "Abcd"));
+        new EndpointsAsyncTask().execute(this);
     }
 
     @Override
     public void OnJokeFetched(String loadedJoke) {
+        if(mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
         mFetchedJoke = loadedJoke;
 
         if(loadedJoke != null){
-            launchJokeActivity();
+            if (mInterstitialAd.isLoaded()) {
+                mInterstitialAd.show();
+            } else {
+                launchJokeActivity();
+            }
         }else{
             Toast.makeText(getActivity(), getString(R.string.error_fetching_joke), Toast.LENGTH_LONG).show();
         }
