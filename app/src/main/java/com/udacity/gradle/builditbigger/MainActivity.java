@@ -12,17 +12,21 @@ import android.widget.Toast;
 
 import com.aggarwalankur.jokes.JokeProvider;
 import com.aggarwalankur.jokeviewer.JokeActivity;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
 import com.udacity.gradle.builditbigger.communication.EndpointsAsyncTask;
 
 
 public class MainActivity extends ActionBarActivity {
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -44,18 +48,6 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void tellJoke(View view){
-        new EndpointsAsyncTask().execute(new Pair<Context, String>(this, "Abcd"));
-
-        /*JokeProvider mJokeProvider = new JokeProvider();
-        String latestJoke = mJokeProvider.getJoke();
-        //Toast.makeText(this, latestJoke, Toast.LENGTH_SHORT).show();
-
-        Intent jokeIntent = new Intent(this, JokeActivity.class);
-        jokeIntent.putExtra("joke", latestJoke);
-        startActivity(jokeIntent);*/
     }
 
 

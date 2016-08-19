@@ -1,19 +1,35 @@
 package com.udacity.gradle.builditbigger;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
 
+import com.aggarwalankur.jokes.JokeProvider;
+import com.aggarwalankur.jokeviewer.JokeActivity;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.udacity.gradle.builditbigger.communication.EndpointsAsyncTask;
 
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements EndpointsAsyncTask.OnJokeFetchedListener{
+
+    private InterstitialAd mInterstitialAd;
+
+    private String mFetchedJoke = "Test joke";
+
+    private Button mTellJokeButton;
 
     public MainActivityFragment() {
     }
@@ -31,6 +47,69 @@ public class MainActivityFragment extends Fragment {
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 .build();
         mAdView.loadAd(adRequest);
+
+        mInterstitialAd = new InterstitialAd(getActivity());
+        mInterstitialAd.setAdUnitId(getActivity().getString(R.string.interstitial_ad_unit_id));
+
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                requestNewInterstitial();
+                launchJokeActivity();
+            }
+        });
+
+        requestNewInterstitial();
+
+        mTellJokeButton = (Button) root.findViewById(R.id.tell_joke_button);
+        mTellJokeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mInterstitialAd.isLoaded()) {
+                    mInterstitialAd.show();
+                } else {
+                    launchJokeActivity();
+                }
+            }
+        });
+
         return root;
+    }
+
+    private void requestNewInterstitial() {
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+
+        mInterstitialAd.loadAd(adRequest);
+    }
+
+    private void launchJokeActivity(){
+        Intent jokeIntent = new Intent(getActivity(), JokeActivity.class);
+        jokeIntent.putExtra(JokeActivity.JOKE_KEY, mFetchedJoke);
+        startActivity(jokeIntent);
+    }
+
+    /**
+     * This was used in 'Step 1: Create a Java library', but is now replaced by GCE
+     */
+    private void loadJokeFromLocalProvider(){
+        JokeProvider mJokeProvider = new JokeProvider();
+        mFetchedJoke = mJokeProvider.getJoke();
+    }
+
+    private void loadJokeFromGCE(){
+        new EndpointsAsyncTask().execute(new Pair<Context, String>(getActivity(), "Abcd"));
+    }
+
+    @Override
+    public void OnJokeFetched(String loadedJoke) {
+        mFetchedJoke = loadedJoke;
+
+        if(loadedJoke != null){
+            launchJokeActivity();
+        }else{
+            Toast.makeText(getActivity(), getString(R.string.error_fetching_joke), Toast.LENGTH_LONG).show();
+        }
     }
 }

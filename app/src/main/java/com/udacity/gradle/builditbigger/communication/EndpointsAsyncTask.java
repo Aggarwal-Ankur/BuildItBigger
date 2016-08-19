@@ -17,6 +17,10 @@ import java.io.IOException;
  * Created by Ankur on 8/17/2016.
  */
 public class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, String> {
+    public interface OnJokeFetchedListener{
+        void OnJokeFetched(String loadedJoke);
+    }
+
     private static MyApi myApiService = null;
     private Context context;
 
