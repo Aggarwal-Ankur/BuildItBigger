@@ -21,17 +21,29 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        free {
+            applicationId "com.udacity.gradle.builditbigger.free"
+        }
+        paid {
+            applicationId "com.udacity.gradle.builditbigger.paid"
+        }
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    // Added for AdMob
+
     compile project(':javajokeprovider')
     compile project(':androidjokeviewer')
     compile 'com.android.support:appcompat-v7:24.0.0'
-    compile 'com.google.android.gms:play-services:8.4.0'
+
     compile 'com.google.code.findbugs:jsr305:2.0.1'
     compile project(path: ':gcejokeprovider', configuration: 'android-endpoints')
     compile 'com.android.support:multidex:1.0.0'
     testCompile 'junit:junit:4.12'
+
+    // Added for AdMob
+    freeCompile 'com.google.android.gms:play-services:8.4.0'
 }
