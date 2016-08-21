@@ -5,7 +5,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0-alpha6'
+        //Do not use gradle 2.2.0 alpha. It caused problems in build
+        classpath 'com.android.tools.build:gradle:2.1.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -17,3 +18,22 @@ allprojects {
         jcenter()
     }
 }
+
+evaluationDependsOn ":app"
+evaluationDependsOn ":gcejokeprovider"
+
+project(":gcejokeprovider"){
+    appengine{
+        daemon true
+    }
+}
+
+tasks.getByPath(":app:connectedCheck").mustRunAfter tasks.getByPath(":gcejokeprovider:appengineRun")
+tasks.getByPath(":gcejokeprovider:appengineStop").mustRunAfter tasks.getByPath(":app:connectedCheck")
+
+task localDevServerTest {
+    dependsOn ":gcejokeprovider:appengineRun", ":app:connectedCheck", ":gcejokeprovider:appengineStop"
+}
+
+localDevServerTest.description = "Task runs local server, runs tests and shuts down server"
+localDevServerTest.group = "Tasks for running android tests"

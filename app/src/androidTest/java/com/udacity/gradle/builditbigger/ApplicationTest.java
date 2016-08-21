@@ -50,6 +50,6 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         assertNull(mError);
         assertNotNull(mFetchedJoke);
         assertTrue(!mFetchedJoke.isEmpty());
-
+        assertFalse("Check your internet connection", mFetchedJoke.contains("Unable to resolve host"));
     }
 }
